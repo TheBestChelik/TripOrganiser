@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -29,7 +30,7 @@ namespace TripOrganiser.Models
 
         public string? Description { get; set; }
 
-        [Required]
+        [BindNever]
         public string InitialOwnerId { get; set; } = string.Empty;
 
         [ForeignKey("InitialOwnerId")]

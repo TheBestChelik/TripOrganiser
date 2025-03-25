@@ -1,4 +1,4 @@
-﻿@model TripOrganiser.Models.Trip
+﻿@model TripOrganiser.Models.TripDetailsViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -12,52 +12,85 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Trip.Id" />
             <div class="form-group">
-                <label asp-for="DestinationCity" class="control-label"></label>
-                <input asp-for="DestinationCity" class="form-control" />
-                <span asp-validation-for="DestinationCity" class="text-danger"></span>
+                <label asp-for="Trip.DestinationCity" class="control-label"></label>
+                <input asp-for="Trip.DestinationCity" class="form-control" />
+                <span asp-validation-for="Trip.DestinationCity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="DepartureAddress" class="control-label"></label>
-                <input asp-for="DepartureAddress" class="form-control" />
-                <span asp-validation-for="DepartureAddress" class="text-danger"></span>
+                <label asp-for="Trip.DepartureAddress" class="control-label"></label>
+                <input asp-for="Trip.DepartureAddress" class="form-control" />
+                <span asp-validation-for="Trip.DepartureAddress" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="DepartureDateTime" class="control-label"></label>
-                <input asp-for="DepartureDateTime" class="form-control" />
-                <span asp-validation-for="DepartureDateTime" class="text-danger"></span>
+                <label asp-for="Trip.DepartureDateTime" class="control-label"></label>
+                <input asp-for="Trip.DepartureDateTime" class="form-control" />
+                <span asp-validation-for="Trip.DepartureDateTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ReturnDateTime" class="control-label"></label>
-                <input asp-for="ReturnDateTime" class="form-control" />
-                <span asp-validation-for="ReturnDateTime" class="text-danger"></span>
+                <label asp-for="Trip.ReturnDateTime" class="control-label"></label>
+                <input asp-for="Trip.ReturnDateTime" class="form-control" />
+                <span asp-validation-for="Trip.ReturnDateTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Capacity" class="control-label"></label>
-                <input asp-for="Capacity" class="form-control" />
-                <span asp-validation-for="Capacity" class="text-danger"></span>
+                <label asp-for="Trip.Capacity" class="control-label"></label>
+                <input asp-for="Trip.Capacity" class="form-control" />
+                <span asp-validation-for="Trip.Capacity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="InitialOwnerId" class="control-label"></label>
-                <select asp-for="InitialOwnerId" class="form-control" asp-items="ViewBag.InitialOwnerId"></select>
-                <span asp-validation-for="InitialOwnerId" class="text-danger"></span>
+                <label asp-for="Trip.Description" class="control-label"></label>
+                <input asp-for="Trip.Description" class="form-control" />
+                <span asp-validation-for="Trip.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
+            <p><strong>Capacity:</strong> @Model.ParticipantsCount / @Model.Trip.Capacity</p>
+            <ul>
+                @for (var i = 0; i < Model.ParticipantEmails.Count; i++)
+                {
+                    <li>
+                        @Model.ParticipantEmails[i]
+
+                        @* Check if the participant is also an organiser *@
+                    @if (!Model.OrganisersEmails.Contains(Model.ParticipantEmails[i]) && Model.OwnerEmail != Model.ParticipantEmails[i])
+                        {
+                            <form asp-action="AddOrganiser" method="post" style="display:inline;">
+                                <input type="hidden" name="userId" value="@Model.ParticipantIds[i]" />
+                                <input type="hidden" name="tripId" value="@Model.Trip.Id" />
+                                <button type="submit" class="btn btn-primary">Add Organiser</button>
+                            </form>
+                        }
+                    </li>
+                }
+            </ul>
+            <p><strong>Organisers:</strong> @Model.OrganisersCount</p>
+            <ul>
+                @for (var i = 0; i < Model.OrganisersEmails.Count; i++)
+                {
+                    <li>
+                        @Model.OrganisersEmails[i]
+
+                        @* Check if the organiser is a participant *@
+                        @if (Model.ParticipantEmails.Contains(Model.OrganisersEmails[i]))
+                        {
+                            <form asp-action="RemoveOrganiser" method="post" style="display:inline;">
+                                <input type="hidden" name="userId" value="@Model.OrganiserIds[i]" />
+                                <input type="hidden" name="tripId" value="@Model.Trip.Id" />
+                                <button type="submit" class="btn btn-danger">Remove Organiser</button>
+                            </form>
+                        }
+                    </li>
+                }
+            </ul>
     </div>
 </div>
-
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

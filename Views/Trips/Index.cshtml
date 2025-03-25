@@ -1,71 +1,65 @@
-﻿@model IEnumerable<TripOrganiser.Models.Trip>
+﻿@model IEnumerable<dynamic>
 
 @{
     ViewData["Title"] = "Index";
+    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.DestinationCity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DepartureAddress)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DepartureDateTime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ReturnDateTime)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Capacity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.InitialOwner)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DestinationCity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DepartureAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DepartureDateTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ReturnDateTime)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Capacity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InitialOwner.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+
+<div class="row">
+    @foreach (var trip in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">@trip.DestinationCity</h5>
+                    <p class="card-text">
+                        <strong>Departure:</strong> @trip.DepartureDateTime.ToString("g")<br />
+                        <strong>Return:</strong> @trip.ReturnDateTime.ToString("g")<br />
+                        <strong>Description:</strong> @trip.Description<br />
+                        <strong>Participants:</strong> @trip.participantCount/@trip.Capacity<br />
+                        <strong>Organisers:</strong> @trip.organisersCont<br />
+                        <strong>Owner:</strong> @trip.InitialOwnerEmail
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            @if (@trip.isOwner || @trip.isOrganiser)
+                            {
+                                <a asp-action="Edit" asp-route-id="@trip.Id" class="btn btn-warning">Edit</a>
+                            }
+                            @if (@trip.isOwner)
+                            {
+                                <a asp-action="Delete" asp-route-id="@trip.Id" class="btn btn-danger">Delete</a>
+                            }
+                            <a asp-action="Details" asp-route-id="@trip.Id" class="btn btn-info">Details</a>
+                        </div>
+                        <div>
+                            @if (!trip.isParticipant)
+                            {
+                                @if (trip.Capacity > trip.participantCount)
+                                {
+                                    <form asp-action="JoinTrip" method="post" style="display:inline;">
+                                        <input type="hidden" name="tripId" value="@trip.Id" />
+                                        <button type="submit" class="btn btn-success">Join</button>
+                                    </form>
+                                }
+                            }
+                            else
+                            {
+                                <form asp-action="QuitTrip" method="post" style="display:inline;">
+                                    <input type="hidden" name="tripId" value="@trip.Id" />
+                                    <button type="submit" class="btn btn-danger">Quit</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -12,7 +12,7 @@ using TripOrganiser.Data;
 namespace TripOrganiser.Migrations
 {
     [DbContext(typeof(TripOrganiserContext))]
-    [Migration("20250324202619_Hui")]
+    [Migration("20250325141648_Hui")]
     partial class Hui
     {
         /// <inheritdoc />
