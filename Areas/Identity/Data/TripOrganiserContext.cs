@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 using TripOrganiser.Areas.Identity.Data;
 using TripOrganiser.Models;
 
@@ -22,6 +23,12 @@ public class TripOrganiserContext : IdentityDbContext<TripOrganiserUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<Trip>()
+             .Property(t => t.RowVersion)
+             .IsRowVersion()
+             .HasColumnType("rowversion")
+             .ValueGeneratedOnAddOrUpdate(); // Ensures EF Core treats it as auto-generated
 
         // Configuring the relationship between Trip and TripOrganiserUser (InitialOwner)
         builder.Entity<Trip>()

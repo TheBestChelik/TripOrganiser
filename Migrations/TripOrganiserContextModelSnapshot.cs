@@ -256,6 +256,12 @@ namespace TripOrganiser.Migrations
                     b.Property<DateTime>("ReturnDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.HasKey("Id");
 
                     b.HasIndex("InitialOwnerId");

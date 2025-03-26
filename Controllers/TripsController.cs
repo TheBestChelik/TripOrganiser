@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using TripOrganiser.Areas.Identity.Data;
 using System.Security.Claims;
+using System.Collections;
 
 namespace TripOrganiser.Controllers
 {
@@ -115,7 +116,6 @@ namespace TripOrganiser.Controllers
                 OrganisersEmails = trip.Organisers.Select(p => p.User.Email).ToList(),
 
             };
-
             return View(viewModel);
         }
 
@@ -136,9 +136,11 @@ namespace TripOrganiser.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return Unauthorized(); // Ensure the user is logged in
+                return Unauthorized();
             }
             trip.InitialOwnerId = user.Id;
+            ModelState.Remove("RowVersion");
+            //trip.RowVersion = new byte[0]; // Initialize RowVersion to an empty array
 
             if (ModelState.IsValid)
             {
@@ -146,12 +148,17 @@ namespace TripOrganiser.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            else
             {
-                // Log or inspect the error messages
-                Console.WriteLine(error.ErrorMessage);
+                foreach (var kvp in ModelState)
+                {
+                    foreach (var error in kvp.Value.Errors)
+                    {
+                        Console.WriteLine($"Property: {kvp.Key}, Error: {error.ErrorMessage}");
+                    }
+                }
             }
-            //ViewData["InitialOwnerId"] = new SelectList(_context.Users, "Id", "Id", trip.InitialOwnerId);
+
             return View(trip);
         }
 
@@ -182,6 +189,7 @@ namespace TripOrganiser.Controllers
             {
                 return Unauthorized(); // Ensure the user is the owner or an organiser
             }
+            Console.WriteLine("RowVersion: " + BitConverter.ToString(trip.RowVersion));
 
             var viewModel = new TripDetailsViewModel
             {
@@ -204,48 +212,68 @@ namespace TripOrganiser.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,DestinationCity,DepartureAddress,DepartureDateTime,ReturnDateTime,Capacity,Description")] Trip trip)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,DestinationCity,DepartureAddress,DepartureDateTime,ReturnDateTime,Capacity,Description,RowVersion")] Trip trip)
         {
             if (id != trip.Id)
             {
                 return NotFound();
             }
+            Console.WriteLine("RowVersion: " + BitConverter.ToString(trip.RowVersion));
+            //ModelState.Remove("trip.RowVersion");
+
 
             if (ModelState.IsValid)
             {
+
+
+
+                _context.Attach(trip);
+                _context.Entry(trip).Property(t => t.DestinationCity).IsModified = true;
+                _context.Entry(trip).Property(t => t.DepartureAddress).IsModified = true;
+                _context.Entry(trip).Property(t => t.DepartureDateTime).IsModified = true;
+                _context.Entry(trip).Property(t => t.ReturnDateTime).IsModified = true;
+                _context.Entry(trip).Property(t => t.Capacity).IsModified = true;
+                _context.Entry(trip).Property(t => t.Description).IsModified = true;
+
+                _context.Entry(trip).Property(t => t.RowVersion).IsModified = true; // Ensure concurrency check
+
                 try
                 {
-                    var existingTrip = await _context.Trips.FindAsync(id);
-                    if (existingTrip == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Update only the necessary fields
-                    existingTrip.DestinationCity = trip.DestinationCity;
-                    existingTrip.DepartureAddress = trip.DepartureAddress;
-                    existingTrip.DepartureDateTime = trip.DepartureDateTime;
-                    existingTrip.ReturnDateTime = trip.ReturnDateTime;
-                    existingTrip.Capacity = trip.Capacity;
-                    existingTrip.Description = trip.Description;
-
-                    _context.Update(existingTrip);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TripExists(trip.Id))
+                    ModelState.AddModelError("", "Concurrency conflict: Another user modified this record while you were editing.");
+                }
+            }
+            else
+            {
+                foreach (var kvp in ModelState)
+                {
+                    foreach (var error in kvp.Value.Errors)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        Console.WriteLine($"Property: {kvp.Key}, Error: {error.ErrorMessage}");
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(trip);
+           
+                
+
+            var viewModel = new TripDetailsViewModel
+            {
+                Trip = trip,
+                ParticipantIds = trip.Participants.Select(p => p.UserId).ToList(),
+                OrganiserIds = trip.Organisers.Select(p => p.UserId).ToList(),
+                ParticipantsCount = trip.Participants?.Count ?? 0,
+                OrganisersCount = trip.Organisers?.Count ?? 0,
+                OwnerEmail = trip.InitialOwner?.Email ?? "",
+                ParticipantEmails = trip.Participants.Select(p => p.User.Email).ToList(),
+                OrganisersEmails = trip.Organisers.Select(p => p.User.Email).ToList(),
+
+            };
+            return View(viewModel);
         }
 
 
@@ -360,6 +388,7 @@ namespace TripOrganiser.Controllers
         {
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null) return Unauthorized();
+            if (userId == currentUser.Id) return BadRequest();  // User cannot remove themselves as an organiser
 
             // Ensure the current user is the owner or an organiser
             var trip = await _context.Trips

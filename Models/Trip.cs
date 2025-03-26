@@ -38,6 +38,10 @@ namespace TripOrganiser.Models
 
         public List<TripOrganisator> Organisers { get; set; } = new();
         public List<TripParticipant> Participants { get; set; } = new();
+        
+        
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
     }
 }
 

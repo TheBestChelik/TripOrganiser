@@ -45,10 +45,12 @@
                 <textarea asp-for="Trip.Description" class="form-control"></textarea>
                 <span asp-validation-for="Trip.Description" class="text-danger"></span>
             </div>
+            <input type="hidden" asp-for="Trip.RowVersion" />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
                 <a asp-action="Index" class="btn btn-secondary">Cancel</a>
             </div>
+           
         </form>
     </div>
 </div>

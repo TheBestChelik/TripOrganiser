@@ -12,8 +12,8 @@ using TripOrganiser.Data;
 namespace TripOrganiser.Migrations
 {
     [DbContext(typeof(TripOrganiserContext))]
-    [Migration("20250325141648_Hui")]
-    partial class Hui
+    [Migration("20250326204220_aboba")]
+    partial class aboba
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -258,6 +258,12 @@ namespace TripOrganiser.Migrations
 
                     b.Property<DateTime>("ReturnDateTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 

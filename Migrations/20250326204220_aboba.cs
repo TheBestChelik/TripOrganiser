@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TripOrganiser.Migrations
 {
     /// <inheritdoc />
-    public partial class Hui : Migration
+    public partial class aboba : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -168,7 +168,8 @@ namespace TripOrganiser.Migrations
                     ReturnDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    InitialOwnerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    InitialOwnerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
