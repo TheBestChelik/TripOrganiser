@@ -1,7 +1,7 @@
 ﻿@model TripOrganiser.Models.Trip
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create new trip";
 }
 
 <h1>Create</h1>
@@ -42,6 +42,7 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+            
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

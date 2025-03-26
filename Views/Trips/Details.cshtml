@@ -1,44 +1,87 @@
-﻿@* @model TripOrganiser.Models.Trip *@
-@model TripOrganiser.Models.TripDetailsViewModel
+﻿@model TripOrganiser.Models.TripDetailsViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Details of the trip";
 }
 
-<h1>Details</h1>
+<h1 class="text-center my-4">Trip Details</h1>
 
-<div>
-    <h4>Trip</h4>
-    <hr />
-    <dl class="row">
-        <p><strong>Destination:</strong> @Model.Trip.DestinationCity</p>
-        <p><strong>Departure:</strong> @Model.Trip.DepartureDateTime.ToString("g")</p>
-        <p><strong>Return:</strong> @Model.Trip.ReturnDateTime.ToString("g")</p>
-        <p><strong>Description:</strong> @Model.Trip.Description</p>
-        <p><strong>Owner:</strong> @Model.Trip.InitialOwner.Email</p>
-        <p><strong>Capacity:</strong> @Model.ParticipantsCount / @Model.Trip.Capacity</p>
-        <ul>
-            @for (var i = 0; i < Model.ParticipantEmails.Count; i++)
-            {
-                <li>
-                    @Model.ParticipantEmails[i]
-                </li>
-            }
-        </ul>
-        <p><strong>Organisers:</strong> @Model.OrganisersCount</p>
-        <ul>
-            @for (var i = 0; i < Model.OrganisersEmails.Count; i++)
-            {
-                <li>
-                    @Model.OrganisersEmails[i]
-                </li>
-            }
-        </ul>
-    </dl>
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="card-title">@Model.Trip.DestinationCity</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Destination:</dt>
+            <dd class="col-sm-9">@Model.Trip.DestinationCity</dd>
+
+            <dt class="col-sm-3">From:</dt>
+            <dd class="col-sm-9">@Model.Trip.DepartureAddress</dd>
+
+            <dt class="col-sm-3">Starting:</dt>
+            <dd class="col-sm-9">@Model.Trip.DepartureDateTime.ToString("g")</dd>
+
+            <dt class="col-sm-3">Finishing:</dt>
+            <dd class="col-sm-9">@Model.Trip.ReturnDateTime.ToString("g")</dd>
+
+            <dt class="col-sm-3">Description:</dt>
+            <dd class="col-sm-9">@Model.Trip.Description</dd>
+
+            <dt class="col-sm-3">Owner:</dt>
+            <dd class="col-sm-9">@Model.Trip.InitialOwner.Email</dd>
+
+            <dt class="col-sm-3">Capacity:</dt>
+            <dd class="col-sm-9">
+                <span class="badge badge-info">@Model.ParticipantsCount / @Model.Trip.Capacity</span>
+            </dd>
+
+            <dt class="col-sm-3">Participants:</dt>
+            <dd class="col-sm-9">
+                <ul class="list-group">
+                    @for (var i = 0; i < Model.ParticipantEmails.Count; i++)
+                    {
+                        <li class="list-group-item">@Model.ParticipantEmails[i]</li>
+                    }
+                </ul>
+            </dd>
+
+            <dt class="col-sm-3">Organisers:</dt>
+            <dd class="col-sm-9">
+                <ul class="list-group">
+                    @for (var i = 0; i < Model.OrganisersEmails.Count; i++)
+                    {
+                        <li class="list-group-item">@Model.OrganisersEmails[i]</li>
+                    }
+                </ul>
+            </dd>
+        </dl>
+    </div>
+    <div class="card-footer text-muted">
+        <div class="d-flex justify-content-between">
+            <div>
+                @if (Model.isOwner || Model.isOrganiser)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Trip.Id" class="btn btn-warning">Edit</a>
+                }
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+            <div>
+                @if (!Model.isParticipant && Model.ParticipantsCount < Model.Trip.Capacity)
+                {
+                    <form asp-action="JoinTrip" method="post" style="display:inline;">
+                        <input type="hidden" name="tripId" value="@Model.Trip.Id" />
+                        <button type="submit" class="btn btn-success">Join</button>
+                    </form>
+                }
+                else if (Model.isParticipant)
+                {
+                    <form asp-action="QuitTrip" method="post" style="display:inline;">
+                        <input type="hidden" name="tripId" value="@Model.Trip.Id" />
+                        <button type="submit" class="btn btn-danger">Quit</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    @if(Model.isOwner || Model.isOrganiser){
-        <a asp-action="Edit" asp-route-id="@Model.Trip.Id">Edit</a>
-    }
-    <a asp-action="Index">Back to List</a>
-</div>
+

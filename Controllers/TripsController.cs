@@ -29,7 +29,7 @@ namespace TripOrganiser.Controllers
         }
 
         // GET: Trips
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string filter = "All")
         {
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -40,7 +40,7 @@ namespace TripOrganiser.Controllers
                 .Include(t => t.Organisers)
                 .ToListAsync();
 
-            var tripList = trips.Select(trip => new
+            var filteredTrips = trips.Select(trip => new
             {
                 trip.Id,
                 trip.DestinationCity,
@@ -56,9 +56,24 @@ namespace TripOrganiser.Controllers
                 organisersCont = trip.Organisers?.Count ?? 0,
                 InitialOwnerEmail = trip.InitialOwner?.Email,
             }).ToList();
+            switch (filter)
+            {
+                case "MyTrips":
+                    filteredTrips = filteredTrips.Where(t => t.isOwner).ToList();
+                    break;
+                case "OrganiserTrips":
+                    filteredTrips = filteredTrips.Where(t => t.isOrganiser).ToList();
+                    break;
+                case "JoinedTrips":
+                    filteredTrips = filteredTrips.Where(t => t.isParticipant).ToList();
+                    break;
+                case "All":
+                default:
+                    break;
+            }
+            ViewData["Filter"] = filter;
 
-
-            return View(tripList);
+            return View(filteredTrips);
         }
 
         // GET: Trips/Details/5
@@ -90,6 +105,7 @@ namespace TripOrganiser.Controllers
                 Trip = trip,
                 isOwner = trip.InitialOwnerId == userId,
                 isOrganiser = trip.Organisers.Any(o => o.UserId == userId),
+                isParticipant = trip.Participants.Any(p => p.UserId == userId),
                 ParticipantIds = trip.Participants.Select(p => p.UserId).ToList(),
                 OrganiserIds = trip.Organisers.Select(p => p.UserId).ToList(),
                 ParticipantsCount = trip.Participants?.Count ?? 0,

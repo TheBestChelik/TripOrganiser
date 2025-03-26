@@ -10,6 +10,7 @@
         public List<string> OrganisersEmails { get; set; } = new();
         public int ParticipantsCount { get; set; }
         public int OrganisersCount { get; set; }
+        public bool isParticipant { get; set; }
         public bool isOrganiser { get; set; }
         public bool isOwner { get; set; }
     }

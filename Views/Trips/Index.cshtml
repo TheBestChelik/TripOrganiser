@@ -1,15 +1,29 @@
 ﻿@model IEnumerable<dynamic>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Trips";
     var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var currentFilter = ViewData["Filter"] as string ?? "All";
 }
 
-<h1>Index</h1>
+<h1>Trips</h1>
 
 <p>
     <a asp-action="Create" class="btn btn-primary">Create New</a>
 </p>
+
+<form method="get" asp-action="Index" class="mb-3">
+    <div class="form-group">
+        <label for="filter">Filter Trips:</label>
+        <select id="filter" name="filter" class="form-control" onchange="this.form.submit()">
+            <option value="All" selected="@(currentFilter == "All")">All Trips</option>
+            <option value="MyTrips" selected="@(currentFilter == "MyTrips")">My Trips</option>
+            <option value="OrganiserTrips" selected="@(currentFilter == "OrganiserTrips")">Organiser Trips</option>
+            <option value="JoinedTrips" selected="@(currentFilter == "JoinedTrips")">Joined Trips</option>
+        </select>
+    </div>
+</form>
+
 
 <div class="row">
     @foreach (var trip in Model)
